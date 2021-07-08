@@ -16,6 +16,7 @@ from sklearn.metrics import accuracy_score
 def pdf_to_text(pdf_in, txt_out):
     num_slides = len(glob(pdf_in + '/slides/*'))
     for i in range(num_slides):
+        print(f"运行命令pdftotext命令")
         os.system("pdftotext {}/slides/{}.pdf {}/{}.txt".format(pdf_in, i, txt_out, i))
 
 
@@ -23,6 +24,8 @@ def txt_to_json(txt_dir):
     all_slides_json = {}
     num_slides = len(glob(txt_dir + '/*.txt'))
     for i in range(num_slides):
+        if not os.path.exists('slide_txts/{}.txt'.format(i)):
+            continue
         with open('slide_txts/{}.txt'.format(i), 'r', encoding='utf-8') as f:
             deck = f.read().split('\f')
             all_slides_json[i] = {'titles': [], 'texts': []}
@@ -178,7 +181,7 @@ def random_forest(json_in):
 def main():
     slide_dir = 'data'
     txt_dir = 'slide_txts'
-    pdf_to_text(slide_dir, txt_dir)
+    # pdf_to_text(slide_dir, txt_dir)
 
     prefilter_json = txt_to_json(txt_dir)
     prefilter_json = merge_titles(prefilter_json)

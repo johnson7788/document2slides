@@ -9,6 +9,7 @@ import pandas as pd
 from pathlib import Path
 from bs4 import BeautifulSoup
 import nltk
+from tqdm import tqdm
 
 
 def basename_without_ext(path):
@@ -101,7 +102,9 @@ class TEIFile(object):
                         sections.append([head.text, head.get('n'), txt])
                     else:
                         if len(sections) == 0:
-                            print("Grobid processing error: " + self.filename)
+                            print("Grobid processing error: " + str(self.filename))
+                        if not sections:
+                            continue
                         sections[-1][2] += txt
             start = 0
             for i in sections:
@@ -146,9 +149,15 @@ def single_entry(tei_file):
 def main():
     # Step 1: Generating pickle
 
-    pool = Pool()
+    # pool = Pool()
     papers = sorted(Path('teidir').glob('*.tei.xml'))
-    entries = pool.map(single_entry, papers)
+    entries = []
+    for idx, paper in tqdm(enumerate(papers)):
+        # if idx < 341:
+        #     continue
+        print(f"处理第{idx}个paper, {paper}")
+        entry = single_entry(paper)
+        entries.append(entry)
     result_df = pd.DataFrame(entries, columns=['ID', 'Title', 'Abstract', 'Text', 'Headers', 'Figs'])
     result_df.to_pickle("papers.pkl")
     print(result_df.head())
